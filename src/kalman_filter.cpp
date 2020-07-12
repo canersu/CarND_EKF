@@ -1,4 +1,6 @@
 #include "kalman_filter.h"
+#include <math.h>
+
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -11,6 +13,7 @@ using Eigen::VectorXd;
 KalmanFilter::KalmanFilter() {}
 
 KalmanFilter::~KalmanFilter() {}
+
 
 void KalmanFilter::Init(VectorXd &x_in, MatrixXd &P_in, MatrixXd &F_in,
                         MatrixXd &H_in, MatrixXd &R_in, MatrixXd &Q_in) {
@@ -45,8 +48,23 @@ void KalmanFilter::Update(const VectorXd &z) {
 }
 
 void KalmanFilter::UpdateEKF(const VectorXd &z) {
-  /**
-   * TODO: update the state by using Extended Kalman Filter equations
-   */
+  float px = x_(0);
+  float py = x_(1);
+  float vx = x_(2);
+  float vy = x_(3);
+  h_ << std::sqrt(px*px + py*py), std::atan2(py,px)-(2*3.141592), (px*vx+py*vy)/std::sqrt(px*px + py*py);
+  MatrixXd Hj_(3,4);
+  Hj_ = T.CalculateJacobian(x_);
+  VectorXd y = z - h_;
+  MatrixXd Hjt = Hj_.transpose();
+  MatrixXd S = Hj_ * P_ * Hjt + R_;
+  MatrixXd Si = S.inverse();
+  MatrixXd PHjt = P_ * Hjt;
+  MatrixXd K = PHjt * Si;
+  //new estimate
+  x_ = x_ + (K * y);
+  long x_size = x_.size();
+  MatrixXd I = MatrixXd::Identity(x_size, x_size);
+  P_ = (I - K * Hj_) * P_;
   
 }
