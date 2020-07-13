@@ -44,8 +44,8 @@ FusionEKF::FusionEKF() {
   P_ = MatrixXd(4, 4);
   P_ <<  1, 0, 0, 0,
          0, 1, 0, 0,
-         0, 0, 1000, 0,
-         0, 0, 0, 1000;
+         0, 0, 250, 0,
+         0, 0, 0, 250;
 }
 
 /**
@@ -118,10 +118,10 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
   // set the process covariance matrix Q
   ekf_.Q_ = MatrixXd(4, 4);
-  ekf_.Q_ <<  dt_4/4*noise_ax, 0, dt_3/2*noise_ax, 0,
-        0, dt_4/4*noise_ay, 0, dt_3/2*noise_ay,
-        dt_3/2*noise_ax, 0, dt_2*noise_ax, 0,
-        0, dt_3/2*noise_ay, 0, dt_2*noise_ay;
+  ekf_.Q_ <<  dt_4/(4.0*noise_ax), 0.0, dt_3/(2.0*noise_ax), 0.0,
+        0, dt_4/(4.0*noise_ay), 0.0, dt_3/(2.0*noise_ay),
+        dt_3/(2.0*noise_ax), 0.0, dt_2*noise_ax, 0.0,
+        0.0, dt_3/(2.0*noise_ay), 0.0, dt_2*noise_ay;
   ekf_.Predict();
 
   /**
