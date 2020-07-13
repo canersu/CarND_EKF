@@ -39,7 +39,6 @@ void KalmanFilter::Update(const VectorXd &z) {
   MatrixXd Si = S.inverse();
   MatrixXd PHt = P_ * Ht;
   MatrixXd K = PHt * Si;
-
   //new estimate
   x_ = x_ + (K * y);
   long x_size = x_.size();
@@ -48,23 +47,29 @@ void KalmanFilter::Update(const VectorXd &z) {
 }
 
 void KalmanFilter::UpdateEKF(const VectorXd &z) {
-  float px = x_(0);
-  float py = x_(1);
-  float vx = x_(2);
-  float vy = x_(3);
-  h_ << std::sqrt(px*px + py*py), std::atan2(py,px)-(2*3.141592), (px*vx+py*vy)/std::sqrt(px*px + py*py);
-  MatrixXd Hj_(3,4);
-  Hj_ = T.CalculateJacobian(x_);
-  VectorXd y = z - h_;
-  MatrixXd Hjt = Hj_.transpose();
-  MatrixXd S = Hj_ * P_ * Hjt + R_;
+  float rho = sqrt(x_(0)*x_(0) + x_(1)*x_(1));
+  float phi = atan2(x_(1), x_(0));
+  float rho_dot;
+  // Prevent zero division
+  if (fabs(rho) < 0.0001) {rho_dot = 0;}
+  else {rho_dot = (x_(0)*x_(2) + x_(1)*x_(3))/rho;}
+
+  VectorXd z_pred(3);
+  z_pred << rho, phi, rho_dot;
+  VectorXd y = z - z_pred;
+  // Add or subtract 2*Pi to stay in range between -pi and +pi
+  if( y[1] > (M_PI) ){y[1] -= 2.f*(M_PI);}
+  if( y[1] < -(M_PI) ){y[1] += 2.f*(M_PI);}
+
+  MatrixXd Ht = H_.transpose();
+  MatrixXd S = H_ * P_ * Ht + R_;
   MatrixXd Si = S.inverse();
-  MatrixXd PHjt = P_ * Hjt;
-  MatrixXd K = PHjt * Si;
-  //new estimate
+  MatrixXd PHt = P_ * Ht;
+  MatrixXd K = PHt * Si;
+  // new estimate
   x_ = x_ + (K * y);
   long x_size = x_.size();
   MatrixXd I = MatrixXd::Identity(x_size, x_size);
-  P_ = (I - K * Hj_) * P_;
+  P_ = (I - K * H_) * P_;
   
 }

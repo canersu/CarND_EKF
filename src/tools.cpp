@@ -15,8 +15,8 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
   rmse << 0,0,0,0;
 
   // check the validity of the following inputs:
-  //  * the estimation vector size should not be zero
-  //  * the estimation vector size should equal ground truth vector size
+  //  the estimation vector size should not be zero
+  //  the estimation vector size should equal ground truth vector size
   if (estimations.size() != ground_truth.size()
       || estimations.size() == 0) {
     std::cout << "Invalid estimation or ground_truth data" << std::endl;
@@ -52,15 +52,20 @@ MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
   float vx = x_state(2);
   float vy = x_state(3);
 
-  // check division by zero
-  if (fabs(px*px+py*py) < 0.0001) {
-    std::cout << "CalculateJacobian () - Error - Division by Zero" << std::endl;
-    return Hj;
+  float c1 = px*px + py*py;
+  float c2 = sqrt(c1);
+  float c3 = (c1*c2);
+
+  //check division by zero
+  if (fabs(c1) < 0.0001){
+      std::cout << "CalculateJacobian () - Error - Division by Zero" << std::endl;
+      return Hj;
   }
 
-  Hj << px/std::sqrt(px*px+py*py), py/std::sqrt(px*px+py*py), 0, 0,
-        -1*py/(px*px+py*py), px/(px*px+py*py), 0, 0,
-        py*(vx*py-vy*px)/std::pow(px*px+py*py,1.5), px*(vy*px-vx*py)/std::pow(px*px+py*py,1.5), px/std::sqrt(px*px+py*py), py/std::sqrt(px*px+py*py);
+  //compute the Jacobian matrix
+  Hj << (px / c2), (py / c2), 0, 0,
+      -(py / c1), (px / c1), 0, 0,
+      py*(vx*py - vy*px) / c3, px*(px*vy - py*vx) / c3, px / c2, py / c2;
 
   return Hj;
 }

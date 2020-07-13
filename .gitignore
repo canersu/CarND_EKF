@@ -4,6 +4,8 @@
 # build files
 build/
 
+ide_profiles/
+Docs/
 # editor config
 .vscode/
 
