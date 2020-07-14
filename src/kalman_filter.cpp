@@ -58,8 +58,9 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   z_pred << rho, phi, rho_dot;
   VectorXd y = z - z_pred;
   // Add or subtract 2*Pi to stay in range between -pi and +pi
-  if( y[1] > (M_PI) ){y[1] -= 2.f*(M_PI);}
-  if( y[1] < -(M_PI) ){y[1] += 2.f*(M_PI);}
+  // if( y[1] > (M_PI) ){y[1] -= 2.f*(M_PI);}
+  // if( y[1] < -(M_PI) ){y[1] += 2.f*(M_PI);}
+  y[1] = atan2(sin(y[1]), cos(y[1])); 
 
   MatrixXd Ht = H_.transpose();
   MatrixXd S = H_ * P_ * Ht + R_;
